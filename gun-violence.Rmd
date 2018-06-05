@@ -8,17 +8,20 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
+library(usmap)
 gv <- read_csv("gun-violence-data_01-2013_03-2018.csv")
 ```
 
 ## Incidents
 
-### By State
+### Total Incidents By State
 ```{r}
 gv_by_state <- count(gv,state)
 gv_by_state$state <- factor(gv_by_state$state, levels = gv_by_state$state[order(gv_by_state$n)])
+gv_by_state_map <- gv_by_state %>% mutate(fips=vapply(gv_by_state$state, fips, character(1))) %>% select(fips,n)
 
-gv_by_state %>% arrange(desc(n)) %>% tail(10) %>% ggplot + geom_bar(mapping=aes(x=state,y=n), stat="identity") + coord_flip() + labs(y="Incidents", x="State")
+plot_usmap(data=gv_by_state_map, regions="states", values="n") + scale_fill_continuous(low="yellow", high="red", name="Incidents") + theme(legend.position="right")
+
+gv_by_state %>% arrange(desc(n)) %>% .[1:5,] %>% rename(Incidents=n) %>% knitr::kable(.)
 ```
 
-Need to change this to use USMAP package.
