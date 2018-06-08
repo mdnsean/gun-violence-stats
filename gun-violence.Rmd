@@ -25,3 +25,20 @@ plot_usmap(data=gv_by_state_map, regions="states", values="n") + scale_fill_cont
 gv_by_state %>% arrange(desc(n)) %>% .[1:5,] %>% rename(Incidents=n) %>% knitr::kable(.)
 ```
 
+### Incidents Over Time
+```{r}
+ggplot(gv) + geom_freqpoly(mapping=aes(x=date), bins=50)
+```
+
+An initial look at the data shows relatively few incidents before 2014. This might be because the Gun Violence Archive, which is the source of this data set, was formed some time in 2013. Before the GVA's formation, the government and police might not have kept as many detailed records of gun violence.
+
+```{r}
+gv %>% filter(date < "2014-01-01") %>% ggplot + geom_freqpoly(mapping=aes(x=date))
+```
+
+## People Killed Per Incident
+```{r}
+plot_colors <- c("green","red","red","red","red","red")
+gv %>% filter(n_killed <= 5) %>% ggplot + geom_histogram(mapping=aes(x=n_killed),binwidth=1, fill=plot_colors) + geom_text(stat="count", mapping=aes(x=n_killed,label=..count..), vjust=-1) + scale_x_continuous(breaks=seq(from=0,to=5,by=1)) + scale_y_continuous(limits=(c(NA,250000))) + labs(x="# Killed", y="Occurrences") + scale_fill_manual(values=c("green","red","red","red","red","red"))
+```
+
