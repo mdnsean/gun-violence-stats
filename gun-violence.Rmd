@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(usmap)
+library(knitr)
 gv <- read_csv("gun-violence-data_01-2013_03-2018.csv")
 ```
 
@@ -22,7 +23,7 @@ gv_by_state_map <- gv_by_state %>% mutate(fips=vapply(gv_by_state$state, fips, c
 
 plot_usmap(data=gv_by_state_map, regions="states", values="n") + scale_fill_continuous(low="yellow", high="red", name="Incidents") + theme(legend.position="right")
 
-gv_by_state %>% arrange(desc(n)) %>% .[1:5,] %>% rename(Incidents=n) %>% knitr::kable(.)
+gv_by_state %>% arrange(desc(n)) %>% .[1:5,] %>% rename(Incidents=n, "Top 5 States"=state) %>% knitr::kable(.)
 ```
 
 ### Incidents Over Time
@@ -36,7 +37,15 @@ An initial look at the data shows relatively few incidents before 2014. This mig
 gv %>% filter(date < "2014-01-01") %>% ggplot + geom_freqpoly(mapping=aes(x=date))
 ```
 
-## People Killed Per Incident
+### Most Violent Incidents
+```{r}
+gv %>% arrange(desc(n_killed)) %>% .[1:5,] %>% select(date, state, city_or_county, n_killed, n_injured) %>% rename(Date=date, State=state, City=city_or_county, Killed=n_killed, Injured=n_injured) %>% kable
+```
+
+While mass shootings grab headlines, only 27 out of the 260,000 reported incidents resulted in > 5 deaths (0.01%), and the majority of incidents cause zero deaths.
+
+### People Killed Per Incident
+
 ```{r}
 plot_colors <- c("green","red","red","red","red","red")
 gv %>% filter(n_killed <= 5) %>% ggplot + geom_histogram(mapping=aes(x=n_killed),binwidth=1, fill=plot_colors) + geom_text(stat="count", mapping=aes(x=n_killed,label=..count..), vjust=-1) + scale_x_continuous(breaks=seq(from=0,to=5,by=1)) + scale_y_continuous(limits=(c(NA,250000))) + labs(x="# Killed", y="Occurrences") + scale_fill_manual(values=c("green","red","red","red","red","red"))
